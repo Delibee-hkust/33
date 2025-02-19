@@ -96,11 +96,68 @@ function updateOrderSummary() {
     }
 }
 
-// 주문하기 버튼 클릭 시 PayPal로 리다이렉트
+// 주문하기 버튼 클릭 시 PayPal로 결제 요청
 $('#order-button').on('click', function() {
-    // 사용자는 아래 URL로 리다이렉션됨
-    window.location.href = 'https://www.paypal.com/ncp/payment/4YQY88ZAWJM3A';
+    const time = $('#time-select').val();
+    const food = $('#food-select').val();
+    const place = $('#place-select').val();
+
+    if (time && food && place) {
+        // PayPal 결제 요청
+        paypal.Buttons({
+            createOrder: function(data, actions) {
+                return actions.order.create({
+                    purchase_units: [{
+                        amount: {
+                            value: '10.00' // 결제 금액, 필요에 따라 변경
+                        }
+                    }]
+                });
+            },
+            onApprove: function(data, actions) {
+                return actions.order.capture().then(function(details) {
+                    alert('결제가 완료되었습니다: ' + details.payer.name.given_name);
+                    
+                    // 재고 감소
+                    stockData[time] -= 1;
+                    console.log(`주문이 완료되었습니다! ${time}의 남은 재고: ${stockData[time]}`);
+                    $('#time-select option:selected').text(`${time} (남은 재고: ${stockData[time]})`);
+                    
+                    // 구글 시트 업데이트 로직 추가
+                    updateStockInSheet(time);
+                });
+            },
+            onCancel: function(data) {
+                alert('결제가 취소되었습니다.');
+                // 실패 페이지로 리다이렉트
+                window.location.href = '실패_페이지_URL'; // 실패 페이지 URL 설정
+            },
+            onError: function(err) {
+                console.error('결제 오류:', err);
+                alert('결제 중 오류가 발생했습니다.');
+            }
+        }).render('#paypal-button-container'); // 버튼을 렌더링할 DIV ID 지정
+    }
 });
+
+// 구글 시트의 재고 업데이트
+function updateStockInSheet(time) {
+    const rowIndex = Object.keys(stockData).indexOf(time) + 2; // B1에서 시작하므로 +2
+    const resource = {
+        values: [[stockData[time]]]
+    };
+
+    gapi.client.sheets.spreadsheets.values.update({
+        spreadsheetId: SPREADSHEET_ID,
+        range: `Inventory!B${rowIndex}`,
+        valueInputOption: 'RAW',
+        resource: resource
+    }).then(response => {
+        console.log('구글 시트 업데이트 성공:', response);
+    }).catch(error => {
+        console.error('구글 시트 업데이트 오류:', error);
+    });
+}
 
 // 두 개의 마커 추가
 const entranceMarker = L.marker([22.337371539151864, 114.26301347735318]).addTo(map)
