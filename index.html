@@ -5,7 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>음식 주문 및 위치 표시</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <script src="https://www.paypal.com/sdk/js?client-id=AcsB6uUflx0XUETH1DVY5jUCIGUDmCSp6Hv7M2aieVE4eg8Riu1CZIhCZlb0mH1oXVvMIIhkC_G2snkL"></script>
+
+    <button id="orderButton">주문하기</button>
+
+    <script>
+        document.getElementById('orderButton').addEventListener('click', function() {
+        // 재고 줄이기 기능 제거
+        // 사용자는 아래 URL로 리다이렉션됨
+        window.location.href = 'https://www.paypal.com/ncp/payment/4YQY88ZAWJM3A';
+        });
+    </script>
+    <script src="https://apis.google.com/js/api.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
