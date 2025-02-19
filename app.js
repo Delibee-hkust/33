@@ -4,12 +4,12 @@ const RANGE = 'Inventory!B2:B8'; // 데이터를 가져올 범위를 설정합�
 
 function getMenuData() {
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${RANGE}?key=${API_KEY}`;
-    
+
     $.get(url, function(data) {
         const rows = data.values;
-        if (rows.length > 0) {
+        if (rows && rows.length > 0) {
             rows.forEach(row => {
-                $('#menu-list').append(`<li>${row[0]} - ${row[1]}원</li>`);
+                $('#menu-list').append(`<li>${row[0]}원</li>`); // 가격만 표시
             });
         } else {
             $('#menu-list').append('<li>메뉴가 없습니다.</li>');
