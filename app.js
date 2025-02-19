@@ -99,7 +99,7 @@ function updateOrderSummary() {
 // 주문하기 버튼 클릭 시 PayPal로 리다이렉트
 $('#order-button').on('click', function() {
     // 사용자는 아래 URL로 리다이렉션됨
-    window.location.href = 'https://www.paypal.com/ncp/payment/4YQY88ZAWJM3A';
+    window.location.href = 'https://www.paypal.com/ncp/payment/N3SK9T76ENBL4';
 });
 
 // 두 개의 마커 추가
