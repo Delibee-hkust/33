@@ -3,13 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>배달의 민족 앱</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <title>음식 주문 및 위치 표시</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #343a40;
+        }
+        #map {
+            height: 600px;
+            width: 100%;
+            border: 1px solid #dee2e6;
+        }
+        #order-summary {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #333;
+        }
+        #menu-container {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+        select {
+            padding: 10px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        button.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
 </head>
 <body>
-    <h1>메뉴 목록</h1>
-    <ul id="menu-list"></ul>
+    <h1>음식 주문 및 사용자 위치 표시</h1>
+    <div id="map"></div>
+    <h2>메뉴 선택</h2>
+    <div id="menu-container">
+        <select id="time-select">
+            <option value="">시간 선택</option>
+        </select>
+        <select id="food-select">
+            <option value="">음식 선택</option>
+        </select>
+        <select id="place-select">
+            <option value="">장소 선택</option>
+        </select>
+    </div>
+    <div id="order-summary"></div>
+    <button id="order-button" class="active" disabled>주문하기</button>
     
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
