@@ -1,23 +1,38 @@
-document.getElementById('orderForm').addEventListener('submit', async function(event) {
-    event.preventDefault(); // 기본 제출 동작 방지
+const menu = [
+    { id: 1, name: '김치찌개', price: 8000 },
+    { id: 2, name: '비빔밥', price: 7000 },
+    { id: 3, name: '불고기', price: 10000 }
+];
 
-    const name = document.getElementById('name').value;
-    const product = document.getElementById('product').value;
-    const quantity = document.getElementById('quantity').value;
+let orderList = [];
 
-    // 주문 내용 서버에 전송
-    const response = await fetch('/api/orders', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name, product, quantity })
+function displayMenu() {
+    const menuDiv = document.getElementById('menu');
+    menu.forEach(item => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'menu-item';
+        itemDiv.innerHTML = `
+            <h3>${item.name} - ${item.price}원</h3>
+            <button onclick="addToOrder(${item.id})">주문하기</button>
+        `;
+        menuDiv.appendChild(itemDiv);
     });
+}
 
-    if (response.ok) {
-        document.getElementById('confirmation').innerText = `주문이 접수되었습니다: ${name}님, ${product} ${quantity}개`;
-        document.getElementById('orderForm').reset();
-    } else {
-        document.getElementById('confirmation').innerText = '주문 저장에 실패했습니다.';
-    }
-});
+function addToOrder(id) {
+    const item = menu.find(i => i.id === id);
+    orderList.push(item);
+    displayOrder();
+}
+
+function displayOrder() {
+    const orderDiv = document.getElementById('order');
+    orderDiv.innerHTML = '';
+    orderList.forEach(item => {
+        const itemDiv = document.createElement('div');
+        itemDiv.innerText = `${item.name} - ${item.price}원`;
+        orderDiv.appendChild(itemDiv);
+    });
+}
+
+displayMenu();
