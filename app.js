@@ -10,6 +10,18 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 let userMarker; // 사용자 위치 마커
 let stockData = {}; // 재고 데이터 저장
 
+// Google API 클라이언트 초기화
+function initClient() {
+    gapi.client.init({
+        'apiKey': API_KEY,
+        'discoveryDocs': ['https://sheets.googleapis.com/$discovery/rest?version=v4']
+    }).then(() => {
+        console.log('Google API Client initialized.');
+    }).catch(error => {
+        console.error('Error initializing Google API Client:', error);
+    });
+}
+
 // 사용자의 위치 표시
 function showUserLocation() {
     if (navigator.geolocation) {
@@ -84,67 +96,11 @@ function updateOrderSummary() {
     }
 }
 
-// PayPal 결제 처리
-function setupPayPalButtons() {
-    paypal.Buttons({
-        createOrder: function(data, actions) {
-            return actions.order.create({
-                purchase_units: [{
-                    amount: {
-                        value: '10.00' // 결제 금액
-                    }
-                }]
-            });
-        },
-        onApprove: function(data, actions) {
-            return actions.order.capture().then(function(details) {
-                alert('결제가 완료되었습니다: ' + details.payer.name.given_name);
-                
-                // 재고 감소
-                const time = $('#time-select').val();
-                stockData[time] -= 1;
-                console.log(`주문이 완료되었습니다! ${time}의 남은 재고: ${stockData[time]}`);
-                $('#time-select option:selected').text(`${time} (남은 재고: ${stockData[time]})`);
-                
-                // 구글 시트 업데이트 로직 추가
-                updateStockInSheet(time);
-            });
-        },
-        onCancel: function(data) {
-            alert('결제가 취소되었습니다.');
-            // 실패 페이지로 리다이렉트
-            window.location.href = '실패_페이지_URL'; // 실패 페이지 URL 설정
-        },
-        onError: function(err) {
-            console.error('결제 오류:', err);
-            alert('결제 중 오류가 발생했습니다.');
-        }
-    }).render('#paypal-button-container');
-}
-
-// 구글 시트의 재고 업데이트
-function updateStockInSheet(time) {
-    const rowIndex = Object.keys(stockData).indexOf(time) + 2; // B1에서 시작하므로 +2
-    const resource = {
-        values: [[stockData[time]]]
-    };
-
-    $.ajax({
-        url: `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/Inventory!B${rowIndex}?valueInputOption=RAW&key=${API_KEY}`,
-        method: 'PUT',
-        contentType: 'application/json',
-        data: JSON.stringify(resource),
-        success: function(response) {
-            console.log('구글 시트 업데이트 성공:', response);
-        },
-        error: function(error) {
-            console.error('구글 시트 업데이트 오류:', error);
-        }
-    });
-}
-
-// PayPal 버튼 설정
-setupPayPalButtons();
+// 주문하기 버튼 클릭 시 PayPal로 리다이렉트
+$('#order-button').on('click', function() {
+    // 사용자는 아래 URL로 리다이렉션됨
+    window.location.href = 'https://www.paypal.com/ncp/payment/4YQY88ZAWJM3A';
+});
 
 // 두 개의 마커 추가
 const entranceMarker = L.marker([22.337371539151864, 114.26301347735318]).addTo(map)
