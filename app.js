@@ -1,4 +1,4 @@
-const API_KEY = 'AIzaSyAmltq7GmxwLcvo0BTo0X8AXnoqSuiVOhM'; // 여기에 본인의 API 키를 입력하세요.
+const API_KEY = 'AIzaSyCneyK_cu8HByPETu7LhviiedMoJHQi21k'; // 여기에 본인의 API 키를 입력하세요.
 const SPREADSHEET_ID = '1IobwmmI-zhvliF1y-_mlmYu0n19JSRsp6NMpQlyz-gM'; // 구글 시트의 ID를 입력하세요.
 const RANGE = 'Inventory!B2:B8'; // 데이터를 가져올 범위를 설정합니다.
 
