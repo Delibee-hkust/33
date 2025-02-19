@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delivery Map with PayPal</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        #map {
+            width: 100%;
+            height: 400px;
+        }
+        .sidebar {
+            margin-top: 10px;
+        }
+        .sidebar select, .sidebar button {
+            display: block;
+            margin: 10px 0;
+            padding: 10px;
+            font-size: 16px;
+        }
+        .out-of-stock {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Delivery Map</h1>
+    <div id="map"></div>
+    <div class="sidebar">
+        <label for="item-select">Choose an item:</label>
+        <select id="item-select">
+            <option value="" disabled selected>Select an item</option>
+        </select>
+        <span id="stock-info"></span>
+        <!-- PayPal Button -->
+        <script src="https://www.paypal.com/sdk/js?client-id=BAApAp647qiyHATodkAjxrR7Zeteli-tfCYnbDgR0ScVpmP9ziy2DFw_KWTxtdcIoFNoZJL1HnoXWuu_8s&components=hosted-buttons&disable-funding=venmo&currency=HKD"></script>
+        <div id="paypal-container-LKHJCGJTJVCY4"></div>
+        <script>
+            paypal.HostedButtons({
+                hostedButtonId: "LKHJCGJTJVCY4",
+                createOrder: (data, actions) => {
+                    const selectedItem = document.getElementById("item-select").value;
+                    if (!selectedItem) {
+                        alert("Please select an item before proceeding to payment.");
+                        return;
+                    }
+
+                    return actions.order.create({
+                        purchase_units: [{
+                            amount: {
+                                value: '10.00' // Example price for the item
+                            },
+                            description: selectedItem
+                        }]
+                    });
+                },
+                onApprove: (data, actions) => {
+                    return actions.order.capture().then(details => {
+                        alert(`Transaction completed by ${details.payer.name.given_name}`);
+                        reduceStock();
+                    });
+                }
+            }).render("#paypal-container-LKHJCGJTJVCY4");
+        </script>
+    </div>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Initialize the map
+        const map = L.map('map').setView([22.3193, 114.1694], 13); // Centered on Hong Kong
+
+        // Add OpenStreetMap tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Add a marker for a delivery zone
+        const marker = L.marker([22.3193, 114.1694]).addTo(map)
+            .bindPopup("Delivery Zone: Central Hong Kong")
+            .openPopup();
+
+        // Get user's location
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(position => {
+                const userLat = position.coords.latitude;
+                const userLon = position.coords.longitude;
+
+                // Add a marker for the user's location
+                L.marker([userLat, userLon]).addTo(map)
+                    .bindPopup("You are here")
+                    .openPopup();
+
+                // Center map on user's location
+                map.setView([userLat, userLon], 13);
+            }, () => {
+                alert("Unable to retrieve your location.");
+            });
+        } else {
+            alert("Geolocation is not supported by your browser.");
+        }
+
+        // Stock data for items (2 items per time slot)
+        const stock = {
+            "Item 1 (9AM-12PM)": 2,
+            "Item 2 (12PM-3PM)": 2,
+            "Item 3 (3PM-6PM)": 2,
+            "Item 4 (6PM-9PM)": 2,
+            "Item 5 (9PM-12AM)": 2
+        };
+
+        // Populate the select dropdown with items
+        const itemSelect = document.getElementById('item-select');
+        const stockInfo = document.getElementById('stock-info');
+
+        function updateOptions() {
+            itemSelect.innerHTML = '<option value="" disabled selected>Select an item</option>';
+            for (const [item, quantity] of Object.entries(stock)) {
+                const option = document.createElement('option');
+                option.value = item;
+                option.textContent = `${item} - ${quantity} available`;
+                if (quantity === 0) {
+                    option.disabled = true; // Disable out-of-stock items
+                }
+                itemSelect.appendChild(option);
+            }
+        }
+
+        // Reduce stock after successful payment
+        function reduceStock() {
+            const selectedItem = itemSelect.value;
+            if (selectedItem && stock[selectedItem] > 0) {
+                stock[selectedItem] -= 1; // Reduce stock by 1
+                updateOptions(); // Update the options to reflect new stock levels
+                stockInfo.textContent = `${selectedItem} stock reduced. Remaining: ${stock[selectedItem]}`;
+                if (stock[selectedItem] === 0) {
+                    stockInfo.textContent += " (Out of Stock)";
+                    stockInfo.classList.add("out-of-stock");
+                } else {
+                    stockInfo.classList.remove("out-of-stock");
+                }
+            }
+        }
+
+        // Initialize the item options
+        updateOptions();
+    </script>
+</body>
+</html>
